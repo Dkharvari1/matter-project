@@ -14,6 +14,7 @@ var mouseConstraint;
 var blocksWidth = 10;
 var blocksHeight = 80;
 var blocksSpacing = 50;
+//delete this message later
 
 
 
