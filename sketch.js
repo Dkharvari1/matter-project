@@ -3,7 +3,10 @@ const World = Matter.World;
 const Bodies = Matter.Bodies;
 const MouseConstraint = Matter.MouseConstraint;
 const Mouse = Matter.Mouse;
+const Constraint = Matter.Constraint;
+const Events = Matter.Events;
 
+var Example = Example || {};
 var engine;
 var ground;
 var boxes=[];
@@ -14,6 +17,7 @@ var mouseConstraint;
 var blocksWidth = 10;
 var blocksHeight = 80;
 var blocksSpacing = 50;
+var rock;
 //delete this message later
 
 
@@ -46,6 +50,15 @@ function setup() {
   for (let i = 0; i < 10; i++) {
     boxes.push(Bodies.rectangle(400 + (i * blocksSpacing), 200, blocksWidth, blocksHeight, {density: 0.05}));
     World.add(engine.world, boxes[i]);
+
+  rockOptions = { density: 0.004 }
+  rock = Bodies.polygon(170, 450, 8, 20, rockOptions)
+  anchor = { x: 170, y: 450 },
+  elastic = Constraint.create({ 
+      pointA: anchor, 
+      bodyB: rock, 
+      stiffness: 0.05
+    });
   }
 
 
@@ -62,9 +75,7 @@ function setup() {
   ball = Bodies.circle(50, 20, 90, {mass: 100});
   
   World.add(engine.world, ball);
-  
- 
-  
+
 
   ground = Bodies.rectangle(800, 410, 1400, 30, {
     isStatic: true
@@ -73,6 +84,23 @@ function setup() {
   // add all of the bodies to the world
   World.add(engine.world, [ground]);
   World.add(engine.world, ramp);
+  World.add(engine.world, [rock, elastic]);
+  MouseConstraint.create(engine, {
+            mouse: mouse,
+            constraint: {
+                stiffness: 0.2,
+                render: {
+                    visible: false
+                }
+            }
+        });
+  Events.on(engine, 'afterUpdate', function() {
+    if (mouseConstraint.mouse.button === -1 && (rock.position.x > 190 || rock.position.y < 430)) {
+        rock = Bodies.polygon(170, 450, 7, 20, rockOptions);
+        World.add(engine.world, rock);
+        elastic.bodyB = rock;
+    }
+});
 
   // run the engine
   Engine.run(engine);
@@ -118,6 +146,17 @@ function draw() {
     vertex(verts[i].x, verts[i].y);
   }
   endShape();
+
+
+  var verties = rock.vertices;
+  beginShape();
+  fill(127);
+  for (var i = 0; i < verties.length; i++) {
+    vertex(verties[i].x, verties[i].y);
+  }
+  endShape();
+
+  
 }
 
 
